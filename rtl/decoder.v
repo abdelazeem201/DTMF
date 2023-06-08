@@ -24,7 +24,7 @@ module decoder (
 /*
  *
  *  @(#) decode_i.v 16.1@(#)
- *  5/31/96  15:15:39
+ *  5/31/22  15:15:39
  *
  */
 
@@ -35,9 +35,9 @@ module decoder (
  *  mimics some of the instruction set functionality of the
  *  TMS320 DSP family
  *
- * Author:  Mark A. Indovina
- *          Cadence Design Systems, Inc.
- *          CSD-IC Technology Laboratory
+ * Author:  Ahmed Abdelazeem
+ *          Zagazig University.
+ *          
  *
  */
 
