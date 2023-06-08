@@ -11,7 +11,7 @@ module digit_reg (
 /*
  *
  *  @(#) digit_reg.v 15.1@(#)
- *  4/1/96  09:09:52
+ *  4/1/23  09:09:52
  *
  */
 
@@ -19,10 +19,9 @@ module digit_reg (
  *
  * ASCII Digit Register
  *
- * Author:  Mark A. Indovina
- *          Cadence Design Systems, Inc.
- *          CSD-IC Technology Laboratory
- *
+ * Author:  Ahmed Abdelazeem
+ *          Zagazig University.
+ *          
  */
 
 input
