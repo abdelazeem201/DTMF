@@ -15,7 +15,7 @@ module data_sample_mux (
 /*
  *
  *  @(#) data_sample_mux.v 15.1@(#)
- *  4/1/96  09:09:50
+ *  4/1/22  09:09:50
  *
  */
 
@@ -24,8 +24,8 @@ module data_sample_mux (
  * Data Sample RAM mux
  *
  * Author:  Mark A. Indovina
- *          Cadence Design Systems, Inc.
- *          CSD-IC Technology Laboratory
+ * Author:  Ahmed Abdelazeem
+ *          Zagazig University.
  *
  */
 
