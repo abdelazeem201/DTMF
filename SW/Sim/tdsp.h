@@ -2,7 +2,7 @@
 /*
  *
  *  @(#) tdsp.h 16.1@(#)
- *  5/31/96  15:15:53
+ *  5/31/23  15:15:53
  *
  */
 
@@ -13,9 +13,9 @@
  *  mimics some of the instruction set functionality of the
  *  TMS320 DSP family
  *
- * Author:  Mark A. Indovina
- *          Cadence Design Systems, Inc.
- *          CSD-IC Technology Laboratory
+ * Author:  Ahmed Abdelazeem
+ *          Trysl Tech.
+ *          Technology Laboratory
  *
  */
 
