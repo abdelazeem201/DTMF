@@ -1,0 +1,48 @@
+
+set_cpf_version 1.0
+
+#################################################
+#
+# 	Technology part of the CPF
+#
+#################################################
+
+set libdir ../library
+
+set WCCOM " \
+        $libdir/blackbox/LIB/pllclk_slow.lib \
+        $libdir/blackbox/LIB/ram_256x16A_slow_syn.lib   \
+        $libdir/blackbox/LIB/rom_512x16A_slow_syn.lib   \
+        $libdir/Core/LIB/tcbn65lp_c050428wc.lib \
+        $libdir/Core/LIB/tcbn65lphvt_c050428wc.lib      \
+        $libdir/tiecell/LIB/tcbn65lp_c050428wc_tie.lib  \
+        $libdir/tiecell/LIB/tcbn65lphvt_c050428wc_tie.lib       \
+"
+
+define_library_set -name ao_wc_1v08 -libraries "$WCCOM"
+
+#################################################
+#
+# 	Design part of the CPF
+#
+#################################################
+
+set_design dtmf_recvr_core
+
+set_hierarchy_separator "/"
+
+set constraintDir ../constraints/
+
+### Create power domains
+
+create_power_domain -name AO -default
+
+create_nominal_condition -name high  -voltage 1.08
+
+update_nominal_condition -name high -library_set ao_wc_1v08
+
+create_power_mode -name PM_HL_FUNC -domain_conditions {AO@high} -default
+
+update_power_mode -name PM_HL_FUNC -sdc_files ${constraintDir}/dtmf_recvr_core_gate.sdc
+
+end_design
