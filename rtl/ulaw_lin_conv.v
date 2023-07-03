@@ -7,7 +7,7 @@ module ulaw_lin_conv (
 /*
  *
  *  @(#) ulaw_lin_conv.v 15.2@(#)
- *  4/8/96  11:29:01
+ *  4/8/23  11:29:01
  *
  */
 
@@ -16,9 +16,9 @@ module ulaw_lin_conv (
  * Expand u-Law compressed pulse-code-modulation (PCM)
  * data per CCITT G.711
  *
- * Author:  Mark A. Indovina
- *          Cadence Design Systems, Inc.
- *          CSD-IC Technology Laboratory
+ * Author:  Ahmed Abelazeem
+ *          Trysl Tech
+ *         
  *
  */
 
