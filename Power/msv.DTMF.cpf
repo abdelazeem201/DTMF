@@ -1,0 +1,174 @@
+
+set_cpf_version 1.0
+
+#################################################
+#
+# 	Technology part of the CPF
+#
+#################################################
+
+set libdir "../library"
+
+set BC07COM " \
+        $libdir/level_shifter/LIB/tcbn65lp_lvlhl_bc110070v0c.lib \
+        $libdir/Core/LIB/tcbn65lp_c050428bc07.lib \
+        $libdir/Core/LIB/tcbn65lphvt_c050428bc07.lib \
+        $libdir/tiecell/LIB/tcbn65lp_c050428bc07_tie.lib \
+        $libdir/tiecell/LIB/tcbn65lphvt_c050428bc07_tie.lib \
+"
+set BCCOM " \
+        $libdir/header/tcbn65lphvt_HEADER_c060424bc.lib \
+        $libdir/blackbox/LIB/pllclk_fast.lib \
+        $libdir/blackbox/LIB/ram_256x16A_fast_syn.lib \
+        $libdir/blackbox/LIB/rom_512x16A_fast_syn.lib \
+        $libdir/Core/LIB/tcbn65lp_c050428bc.lib \
+        $libdir/Core/LIB/tcbn65lphvt_c050428bc.lib \
+        $libdir/tiecell/LIB/tcbn65lp_c050428bc_tie.lib \
+        $libdir/tiecell/LIB/tcbn65lphvt_c050428bc_tie.lib \
+"
+set WC07COM " \
+        $libdir/level_shifter/LIB/tcbn65lplvtwc0d90d72.lib \
+        $libdir/level_shifter/LIB/tcbn65lplvtwc0d720d9.lib \
+        $libdir/Core/LIB/tcbn65lp_c050428wc07.lib \
+        $libdir/Core/LIB/tcbn65lphvt_c050428wc07.lib \
+        $libdir/tiecell/LIB/tcbn65lp_c050428wc07_tie.lib \
+	$libdir/tiecell/LIB/tcbn65lphvt_c050428wc07_tie.lib \
+"
+set WCCOM " \
+        $libdir/level_shifter/LIB/tcbn65lplvtwc0d90d72.lib \
+        $libdir/level_shifter/LIB/tcbn65lplvtwc0d720d9.lib \
+        $libdir/level_shifter/LIB/tcbn65lp_lvlhl_wc090070v125c.lib \
+        $libdir/level_shifter/LIB/tcbn65lplvt_lvl_wc070090v125c.lib \
+        $libdir/header/tcbn65lphvt_HEADER_c060424wc.lib \
+	$libdir/header/tcbn65lphvt_HEADER_c060424bc.lib \
+        $libdir/blackbox/LIB/pllclk_slow.lib \
+        $libdir/blackbox/LIB/ram_256x16A_slow_syn.lib \
+        $libdir/blackbox/LIB/rom_512x16A_slow_syn.lib \
+        $libdir/Core/LIB/tcbn65lp_c050428wc.lib \
+        $libdir/Core/LIB/tcbn65lphvt_c050428wc.lib \
+        $libdir/tiecell/LIB/tcbn65lp_c050428wc_tie.lib \
+        $libdir/tiecell/LIB/tcbn65lphvt_c050428wc_tie.lib \
+"
+
+define_library_set -name ao_wc_1v08 -libraries "$WCCOM"
+
+#define_library_set -name ao_bc_1v32 -libraries "$BCCOM"
+
+define_library_set -name tdsp_wc_0v84 -libraries "$WC07COM"
+
+#define_library_set -name tdsp_bc_0v84 -libraries "$BC07COM"
+
+#### Level Shifters 
+define_level_shifter_cell -cells LVLHLD2LVT -library_set tdsp_wc_0v84 \
+        -input_voltage_range 1.08 \
+        -output_voltage_range 0.84 \
+        -output_voltage_input_pin NSLEEP \
+        -input_power_pin VDD \
+        -output_power_pin VDDL \
+        -direction down \
+        -ground VSS \
+        -valid_location to
+define_level_shifter_cell -cells LVLLHCD2LVT -library_set ao_wc_1v08 \
+        -input_voltage_range 0.84 \
+        -output_voltage_range 1.08 \
+        -output_voltage_input_pin NSLEEP \
+        -input_power_pin VDDL \
+        -output_power_pin VDD \
+        -direction up \
+        -ground VSS \
+        -valid_location to
+
+### this is always-on level shifter, assign TVDD as output_power_pin
+define_level_shifter_cell -cells {PTLVLHLD2HVT} \
+        -input_voltage_range 0.84:1.08:0.06 \
+        -output_voltage_range 0.84 \
+        -direction down \
+        -output_power_pin TVDD \
+        -ground VSS \
+        -valid_location to
+
+
+#################################################
+#
+# 	Design part of the CPF
+#
+#################################################
+
+set_design dtmf_recvr_core
+
+set_hierarchy_separator "/"
+
+set constraintDir ../constraints/
+
+create_power_nets -nets VDD -voltage 1.08
+create_power_nets -nets VDD_TDSPCore_R -voltage 0.84
+create_ground_nets -nets VSS
+create_power_nets -nets Avdd -voltage 1.08
+create_ground_nets -nets Avss
+create_power_nets -nets VDD_TDSPCore -internal -voltage 0.84
+
+### Create power domains
+
+create_power_domain -name AO -default
+update_power_domain -name AO -internal_power_net VDD
+
+create_power_domain -name PLL -instances PLLCLK_INST
+update_power_domain -name PLL -internal_power_net Avdd
+
+create_power_domain -name TDSPCore -instances TDSP_CORE_INST 
+#update_power_domain -name TDSPCore -internal_power_net VDD_TDSPCore
+
+create_global_connection -domain AO -net VDD_TDSPCore -pins VDDL
+create_global_connection -domain AO -net VSS -pins VSS
+create_global_connection -domain AO -net VDD -pins VDD
+
+create_global_connection -domain PLL -net Avdd -pins avdd!
+create_global_connection -domain PLL -net Avss -pins agnd!
+
+create_global_connection -domain TDSPCore -net VSS -pins VSS
+create_global_connection -domain TDSPCore -net VDD_TDSPCore_R -pins TVDD
+create_global_connection -domain TDSPCore -net VDD_TDSPCore -pins VDD
+
+#create_operating_corner -name OC_BC07COM -process 1 -temperature 0 -voltage 0.84 -library_set tdsp_bc_0v84
+#create_operating_corner -name OC_BCCOM -process 1 -temperature 0 -voltage 1.32 -library_set ao_bc_1v32
+create_operating_corner -name OC_WCCOM -process 1 -temperature 125 -voltage 1.08 -library_set ao_wc_1v08
+create_operating_corner -name OC_WC07COM -process 1 -temperature 125 -voltage 0.84 -library_set tdsp_wc_0v84
+
+#create_nominal_condition -name bc  -voltage 1.32
+create_nominal_condition -name high  -voltage 1.08
+create_nominal_condition -name low   -voltage 0.84
+#create_nominal_condition -name off -voltage 0.00
+
+#update_nominal_condition -name bc -library_set ao_bc_1v32
+update_nominal_condition -name high -library_set ao_wc_1v08
+update_nominal_condition -name low  -library_set tdsp_wc_0v84
+
+create_power_mode -name PM_HL_FUNC -domain_conditions {AO@high PLL@high TDSPCore@low} -default
+create_power_mode -name PM_HL_SCAN -domain_conditions {AO@high PLL@high TDSPCore@low}
+#create_power_mode -name PM_HO_FUNC -domain_conditions {AO@high PLL@high TDSPCore@off}
+#create_power_mode -name PM_LO_FUNC -domain_conditions {AO@low PLL@low TDSPCore@off}
+
+update_power_mode -name PM_HL_FUNC -sdc_files ${constraintDir}/dtmf_recvr_core_gate.sdc
+update_power_mode -name PM_HL_SCAN -sdc_files ${constraintDir}/dtmf_recvr_core_test.sdc
+#update_power_mode -name PM_HO_FUNC -sdc_files ${constraintDir}/dtmf_recvr_core_gate.sdc
+#update_power_mode -name PM_LO_FUNC -sdc_files ${constraintDir}/dtmf_recvr_core_dull.sdc
+
+#create_analysis_view -name AV_HL_FUNC_MIN -mode PM_HL_FUNC -domain_corners {AO@OC_BCCOM PLL@OC_BCCOM TDSPCore@OC_BC07COM}
+create_analysis_view -name AV_HL_FUNC_MAX -mode PM_HL_FUNC -domain_corners {AO@OC_WCCOM PLL@OC_WCCOM TDSPCore@OC_WC07COM}
+#create_analysis_view -name AV_HL_SCAN_MIN -mode PM_HL_SCAN -domain_corners {AO@OC_BCCOM PLL@OC_BCCOM TDSPCore@OC_BC07COM}
+#create_analysis_view -name AV_HO_FUNC_MAX -mode PM_HO_FUNC -domain_corners {AO@OC_WCCOM PLL@OC_WCCOM TDSPCore@OC_WC07COM}
+#create_analysis_view -name AV_LO_FUNC_MIN -mode PM_LO_FUNC -domain_corners {AO@OC_BCCOM PLL@OC_BCCOM TDSPCore@OC_BC07COM}
+#create_analysis_view -name AV_LO_FUNC_MAX -mode PM_LO_FUNC -domain_corners {AO@OC_WCCOM PLL@OC_WCCOM TDSPCore@OC_WC07COM}
+
+create_level_shifter_rule -name LSruleH2L -from AO -to TDSPCore -exclude {PM_INST/power_switch_enable}
+update_level_shifter_rules -names LSruleH2L -cells LVLHLD2LVT -library_set tdsp_wc_0v84 -location to 
+
+create_level_shifter_rule -name LSruleH2Lao -from AO -to TDSPCore -pins {PM_INST/power_switch_enable}
+update_level_shifter_rules -names LSruleH2Lao -cells PTLVLHLD2HVT -location to 
+
+create_level_shifter_rule -name LSruleL2H -from TDSPCore -to AO
+update_level_shifter_rules -names LSruleL2H -cells LVLLHCD2LVT -library_set ao_wc_1v08 -location to 
+
+end_design
+
+
